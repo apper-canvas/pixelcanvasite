@@ -554,8 +554,6 @@ const MainFeature = () => {
               </select>
             </div>
           </div>
-        </div>
-  // Render editor element
         {/* Borders */}
         <div className="card p-4">
           <h3 className="font-bold mb-3">Borders</h3>
@@ -596,8 +594,6 @@ const MainFeature = () => {
               </select>
             </div>
           </div>
-        </div>
-  const renderEditorElement = (section) => {
         {/* Effects */}
         <div className="card p-4">
           <h3 className="font-bold mb-3">Effects</h3>
@@ -630,8 +626,6 @@ const MainFeature = () => {
               </select>
             </div>
           </div>
-        </div>
-    const isSelected = selectedElement === section.id;
         {/* Global Actions */}
         <div className="card p-4">
           <h3 className="font-bold mb-3">Global Actions</h3>
@@ -650,10 +644,14 @@ const MainFeature = () => {
     );
   };
 
+  // Render editor element
+  const renderEditorElement = (section) => {
+    const isSelected = selectedElement === section.id;
     
     const baseClasses = `editor-element relative mb-4 ${isSelected ? 'selected' : ''} 
                        border-2 border-dashed ${isSelected ? 'border-solid border-primary' : 'border-surface-300 dark:border-surface-600'}
                        rounded-lg transition-all duration-200`;
+    
     
     return (
       <div 
