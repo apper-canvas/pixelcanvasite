@@ -600,7 +600,7 @@ const MainFeature = () => {
 
         {/* Effects */}
         <div className="card p-4">
-          <h3 className="font-bold mb-3">Effects</h3>
+                  <Sketch
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">Box Shadow</label>
@@ -615,7 +615,7 @@ const MainFeature = () => {
                 <option value="0 10px 25px rgba(0,0,0,0.15)">Heavy</option>
               </select>
             </div>
-            <div>
+                  <Sketch
               <label className="block text-sm font-medium mb-2">Animation</label>
               <select 
                 className="input-field"
