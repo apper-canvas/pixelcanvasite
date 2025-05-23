@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { SketchPicker } from 'react-color';
 import { toast } from 'react-toastify';
 import ApperIcon from './ApperIcon';
 
@@ -91,9 +92,10 @@ const initialWebsiteData = {
 };
 
 const MainFeature = () => {
-  const [activeTab, setActiveTab] = useState('editor'); // editor, preview, templates, settings
+  const [activeTab, setActiveTab] = useState('editor'); // editor, preview, templates, settings, styles
   const [websiteData, setWebsiteData] = useState(initialWebsiteData);
   const [selectedElement, setSelectedElement] = useState(null);
+  const [elementStyles, setElementStyles] = useState({});
   const [isDragging, setIsDragging] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -122,6 +124,23 @@ const MainFeature = () => {
       secondary: '#fb923c',
       accent: '#ea580c'
     }
+  };
+
+  // Default styling options
+  const defaultElementStyle = {
+    backgroundColor: 'transparent',
+    textColor: '#000000',
+    fontSize: '16px',
+    fontWeight: 'normal',
+    fontFamily: 'Inter',
+    textAlign: 'left',
+    padding: '16px',
+    margin: '8px',
+    borderWidth: '0px',
+    borderColor: '#e2e8f0',
+    borderRadius: '8px',
+    boxShadow: 'none',
+    animation: 'none'
   };
 
   // Handle dragging elements into the editor
@@ -350,10 +369,287 @@ const MainFeature = () => {
     toast.success(`${scheme.charAt(0).toUpperCase() + scheme.slice(1)} color scheme applied!`);
     setHasChanges(true);
   };
+  // Handle element styling
+  const updateElementStyle = (elementId, styleProperty, value) => {
+    setElementStyles(prev => ({
+      ...prev,
+      [elementId]: {
+        ...(prev[elementId] || defaultElementStyle),
+        [styleProperty]: value
+      }
+    }));
+    setHasChanges(true);
+    toast.success('Style updated successfully');
+  };
 
+  const resetElementStyles = (elementId) => {
+    if (!elementId) {
+      // Reset all styles
+      setElementStyles({});
+      toast.success('All element styles reset to default');
+    } else {
+      // Reset specific element
+      setElementStyles(prev => {
+        const updated = { ...prev };
+        delete updated[elementId];
+        return updated;
+      });
+      toast.success('Element styles reset to default');
+    }
+    setHasChanges(true);
+  };
+
+  const getElementStyle = (elementId) => {
+    return elementStyles[elementId] || defaultElementStyle;
+  };
+
+  const applyStylesToElement = (elementId) => {
+    const styles = getElementStyle(elementId);
+    return {
+      backgroundColor: styles.backgroundColor,
+      color: styles.textColor,
+      fontSize: styles.fontSize,
+      fontWeight: styles.fontWeight,
+      fontFamily: styles.fontFamily,
+      textAlign: styles.textAlign,
+      padding: styles.padding,
+      margin: styles.margin,
+      borderWidth: styles.borderWidth,
+      borderColor: styles.borderColor,
+      borderStyle: styles.borderWidth !== '0px' ? 'solid' : 'none',
+      borderRadius: styles.borderRadius,
+      boxShadow: styles.boxShadow,
+      animation: styles.animation !== 'none' ? `${styles.animation} 2s infinite` : 'none'
+    };
+  };
+
+  // Render styling panel
+  const renderStylingPanel = () => {
+    if (!selectedElement) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-center p-6">
+          <ApperIcon name="Palette" className="h-16 w-16 text-surface-400 mb-4" />
+          <h3 className="text-lg font-medium mb-2">Select an element to style</h3>
+          <p className="text-surface-600 dark:text-surface-400">
+            Click on any element in the editor to customize its appearance
+          </p>
+        </div>
+      );
+    }
+
+    const currentStyles = getElementStyle(selectedElement);
+    const selectedSection = websiteData.sections.find(s => s.id === selectedElement);
+
+    return (
+      <div className="p-6 space-y-6 overflow-y-auto">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">Styling: {selectedSection?.name}</h2>
+          <button
+            onClick={() => resetElementStyles(selectedElement)}
+            className="text-sm text-surface-500 hover:text-surface-700 dark:hover:text-surface-300"
+          >
+            Reset Styles
+          </button>
+        </div>
+
+        {/* Background Color */}
+        <div className="card p-4">
+          <h3 className="font-bold mb-3">Background</h3>
+          <label className="block text-sm font-medium mb-2">Background Color</label>
+          <SketchPicker
+            color={currentStyles.backgroundColor}
+            onChange={(color) => updateElementStyle(selectedElement, 'backgroundColor', color.hex)}
+            width="100%"
+          />
+        </div>
+
+        {/* Typography */}
+        <div className="card p-4">
+          <h3 className="font-bold mb-3">Typography</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Text Color</label>
+              <SketchPicker
+                color={currentStyles.textColor}
+                onChange={(color) => updateElementStyle(selectedElement, 'textColor', color.hex)}
+                width="100%"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Font Size</label>
+              <select 
+                className="input-field"
+                value={currentStyles.fontSize}
+                onChange={(e) => updateElementStyle(selectedElement, 'fontSize', e.target.value)}
+              >
+                <option value="12px">12px</option>
+                <option value="14px">14px</option>
+                <option value="16px">16px</option>
+                <option value="18px">18px</option>
+                <option value="20px">20px</option>
+                <option value="24px">24px</option>
+                <option value="32px">32px</option>
+                <option value="48px">48px</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Font Weight</label>
+              <select 
+                className="input-field"
+                value={currentStyles.fontWeight}
+                onChange={(e) => updateElementStyle(selectedElement, 'fontWeight', e.target.value)}
+              >
+                <option value="normal">Normal</option>
+                <option value="bold">Bold</option>
+                <option value="lighter">Light</option>
+                <option value="bolder">Extra Bold</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Text Align</label>
+              <select 
+                className="input-field"
+                value={currentStyles.textAlign}
+                onChange={(e) => updateElementStyle(selectedElement, 'textAlign', e.target.value)}
+              >
+                <option value="left">Left</option>
+                <option value="center">Center</option>
+                <option value="right">Right</option>
+                <option value="justify">Justify</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Spacing */}
+        <div className="card p-4">
+          <h3 className="font-bold mb-3">Spacing</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Padding</label>
+              <select 
+                className="input-field"
+                value={currentStyles.padding}
+                onChange={(e) => updateElementStyle(selectedElement, 'padding', e.target.value)}
+              >
+                <option value="0px">None</option>
+                <option value="8px">Small</option>
+                <option value="16px">Medium</option>
+                <option value="24px">Large</option>
+                <option value="32px">Extra Large</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Margin</label>
+              <select 
+                className="input-field"
+                value={currentStyles.margin}
+                onChange={(e) => updateElementStyle(selectedElement, 'margin', e.target.value)}
+              >
+                <option value="0px">None</option>
+                <option value="8px">Small</option>
+                <option value="16px">Medium</option>
+                <option value="24px">Large</option>
+                <option value="32px">Extra Large</option>
+              </select>
+            </div>
+          </div>
+        </div>
   // Render editor element
+        {/* Borders */}
+        <div className="card p-4">
+          <h3 className="font-bold mb-3">Borders</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Border Width</label>
+              <select 
+                className="input-field"
+                value={currentStyles.borderWidth}
+                onChange={(e) => updateElementStyle(selectedElement, 'borderWidth', e.target.value)}
+              >
+                <option value="0px">None</option>
+                <option value="1px">Thin</option>
+                <option value="2px">Medium</option>
+                <option value="4px">Thick</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Border Color</label>
+              <SketchPicker
+                color={currentStyles.borderColor}
+                onChange={(color) => updateElementStyle(selectedElement, 'borderColor', color.hex)}
+                width="100%"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Border Radius</label>
+              <select 
+                className="input-field"
+                value={currentStyles.borderRadius}
+                onChange={(e) => updateElementStyle(selectedElement, 'borderRadius', e.target.value)}
+              >
+                <option value="0px">None</option>
+                <option value="4px">Small</option>
+                <option value="8px">Medium</option>
+                <option value="16px">Large</option>
+                <option value="50%">Rounded</option>
+              </select>
+            </div>
+          </div>
+        </div>
   const renderEditorElement = (section) => {
+        {/* Effects */}
+        <div className="card p-4">
+          <h3 className="font-bold mb-3">Effects</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Box Shadow</label>
+              <select 
+                className="input-field"
+                value={currentStyles.boxShadow}
+                onChange={(e) => updateElementStyle(selectedElement, 'boxShadow', e.target.value)}
+              >
+                <option value="none">None</option>
+                <option value="0 1px 3px rgba(0,0,0,0.1)">Light</option>
+                <option value="0 4px 6px rgba(0,0,0,0.1)">Medium</option>
+                <option value="0 10px 25px rgba(0,0,0,0.15)">Heavy</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Animation</label>
+              <select 
+                className="input-field"
+                value={currentStyles.animation}
+                onChange={(e) => updateElementStyle(selectedElement, 'animation', e.target.value)}
+              >
+                <option value="none">None</option>
+                <option value="pulse">Pulse</option>
+                <option value="bounce">Bounce</option>
+                <option value="fade-in">Fade In</option>
+                <option value="slide-in">Slide In</option>
+              </select>
+            </div>
+          </div>
+        </div>
     const isSelected = selectedElement === section.id;
+        {/* Global Actions */}
+        <div className="card p-4">
+          <h3 className="font-bold mb-3">Global Actions</h3>
+          <button
+            onClick={() => {
+              if (confirm('Reset all element styles? This action cannot be undone.')) {
+                resetElementStyles();
+              }
+            }}
+            className="w-full py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+          >
+            Reset All Styles
+          </button>
+        </div>
+      </div>
+    );
+  };
+
     
     const baseClasses = `editor-element relative mb-4 ${isSelected ? 'selected' : ''} 
                        border-2 border-dashed ${isSelected ? 'border-solid border-primary' : 'border-surface-300 dark:border-surface-600'}
@@ -379,7 +675,7 @@ const MainFeature = () => {
         )}
         
         {/* Element content */}
-        <div className="p-4 bg-white dark:bg-surface-800 rounded-md">
+        <div className="p-4 bg-white dark:bg-surface-800 rounded-md" style={applyStylesToElement(section.id)}>
           <div className="flex items-center mb-2">
             <ApperIcon name={section.icon} className="mr-2 h-5 w-5 text-primary" />
             <h3 className="text-lg font-medium">{section.name}</h3>
@@ -540,7 +836,7 @@ const MainFeature = () => {
       {/* Builder Tabs */}
       <div className="bg-white dark:bg-surface-900 border-b border-surface-200 dark:border-surface-700">
         <div className="flex">
-          {['editor', 'preview', 'templates', 'settings'].map((tab) => (
+          {['editor', 'preview', 'templates', 'settings', 'styles'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -725,6 +1021,13 @@ const MainFeature = () => {
         )}
         
         {/* Editor canvas */}
+        {/* Styles panel */}
+        {activeTab === 'styles' && (
+          <div className="flex-1 overflow-y-auto">
+            {renderStylingPanel()}
+          </div>
+        )}
+        
         {activeTab === 'editor' && (
           <div 
             ref={editorRef}
@@ -770,7 +1073,7 @@ const MainFeature = () => {
               ) : (
                 websiteData.sections.map(section => {
                   return (
-                    <div key={section.id} className="preview-section p-4">
+                    <div key={section.id} className="preview-section p-4" style={applyStylesToElement(section.id)}>
                       {section.id.startsWith('header') && (
                         <div className="py-12 text-center" style={{backgroundColor: colorSchemes[colorScheme].primary, color: 'white'}}>
                           <h1 className="text-3xl md:text-4xl font-bold mb-4">{section.content.title}</h1>
