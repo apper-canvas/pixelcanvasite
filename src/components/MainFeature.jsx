@@ -554,8 +554,8 @@ const MainFeature = () => {
               </select>
             </div>
           </div>
+
         {/* Borders */}
-        
         <div className="card p-4">
           <h3 className="font-bold mb-3">Borders</h3>
           <div className="space-y-4">
@@ -595,8 +595,9 @@ const MainFeature = () => {
               </select>
             </div>
           </div>
+        </div>
+
         {/* Effects */}
-        
         <div className="card p-4">
           <h3 className="font-bold mb-3">Effects</h3>
           <div className="space-y-4">
@@ -628,8 +629,9 @@ const MainFeature = () => {
               </select>
             </div>
           </div>
+        </div>
+
         {/* Global Actions */}
-        
         <div className="card p-4">
           <h3 className="font-bold mb-3">Global Actions</h3>
           <button
@@ -644,7 +646,6 @@ const MainFeature = () => {
           </button>
         </div>
       </div>
-    </div>
     );
   };
 
