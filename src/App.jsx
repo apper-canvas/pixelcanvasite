@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ApperIcon from './components/ApperIcon';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
+import MediaLibrary from './components/MediaLibrary/MediaLibraryComponent';
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -39,6 +40,14 @@ function App() {
           
           <div className="flex items-center space-x-4">
             <button 
+              onClick={() => window.location.href = '/media-library'}
+              className="p-2 rounded-full hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
+              aria-label="Media Library"
+            >
+              <ApperIcon name="Image" className="h-5 w-5" />
+            </button>
+            
+            <button 
               onClick={toggleDarkMode}
               className="p-2 rounded-full hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
               aria-label="Toggle dark mode"
@@ -56,6 +65,7 @@ function App() {
       <main className="container mx-auto px-4 py-8">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/media-library" element={<MediaLibrary />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
