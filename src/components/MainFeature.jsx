@@ -554,6 +554,7 @@ const MainFeature = () => {
               </select>
             </div>
           </div>
+        </div>
 
         {/* Borders */}
         <div className="card p-4">
