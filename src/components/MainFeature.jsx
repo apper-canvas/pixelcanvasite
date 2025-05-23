@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { SketchPicker } from 'react-color';
+import { Sketch } from '@uiw/react-color';
 import { toast } from 'react-toastify';
 import ApperIcon from './ApperIcon';
 
@@ -456,7 +456,7 @@ const MainFeature = () => {
         <div className="card p-4">
           <h3 className="font-bold mb-3">Background</h3>
           <label className="block text-sm font-medium mb-2">Background Color</label>
-          <SketchPicker
+          <Sketch
             color={currentStyles.backgroundColor}
             onChange={(color) => updateElementStyle(selectedElement, 'backgroundColor', color.hex)}
             width="100%"
@@ -469,7 +469,7 @@ const MainFeature = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">Text Color</label>
-              <SketchPicker
+              <Sketch
                 color={currentStyles.textColor}
                 onChange={(color) => updateElementStyle(selectedElement, 'textColor', color.hex)}
                 width="100%"
@@ -575,7 +575,7 @@ const MainFeature = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Border Color</label>
-              <SketchPicker
+              <Sketch
                 color={currentStyles.borderColor}
                 onChange={(color) => updateElementStyle(selectedElement, 'borderColor', color.hex)}
                 width="100%"
@@ -600,7 +600,7 @@ const MainFeature = () => {
 
         {/* Effects */}
         <div className="card p-4">
-                  <Sketch
+          <h3 className="font-bold mb-3">Effects</h3>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">Box Shadow</label>
@@ -615,7 +615,7 @@ const MainFeature = () => {
                 <option value="0 10px 25px rgba(0,0,0,0.15)">Heavy</option>
               </select>
             </div>
-                  <Sketch
+            <div>
               <label className="block text-sm font-medium mb-2">Animation</label>
               <select 
                 className="input-field"
