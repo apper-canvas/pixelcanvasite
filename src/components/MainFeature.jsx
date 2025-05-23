@@ -1,0 +1,810 @@
+import { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
+import ApperIcon from './ApperIcon';
+
+// Sample website templates
+const WEBSITE_TEMPLATES = [
+  {
+    id: 'template-1',
+    name: 'Business',
+    thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+    description: 'Professional template for businesses with services section and contact form.'
+  },
+  {
+    id: 'template-2',
+    name: 'Portfolio',
+    thumbnail: 'https://images.unsplash.com/photo-1545665277-5937489579f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+    description: 'Showcase your work with this elegant portfolio template.'
+  },
+  {
+    id: 'template-3',
+    name: 'Restaurant',
+    thumbnail: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+    description: 'Perfect for restaurants with menu sections and reservation form.'
+  },
+  {
+    id: 'template-4',
+    name: 'Event',
+    thumbnail: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+    description: 'Ideal for promoting events with registration capabilities.'
+  }
+];
+
+// Sample website sections that can be dragged
+const WEBSITE_SECTIONS = [
+  {
+    id: 'header',
+    name: 'Header',
+    icon: 'HeaderIcon',
+    type: 'structure'
+  },
+  {
+    id: 'about',
+    name: 'About',
+    icon: 'Info',
+    type: 'structure'
+  },
+  {
+    id: 'services',
+    name: 'Services',
+    icon: 'Briefcase',
+    type: 'structure'
+  },
+  {
+    id: 'contact',
+    name: 'Contact',
+    icon: 'Mail',
+    type: 'structure'
+  },
+  {
+    id: 'text',
+    name: 'Text',
+    icon: 'Type',
+    type: 'element'
+  },
+  {
+    id: 'image',
+    name: 'Image',
+    icon: 'Image',
+    type: 'element'
+  },
+  {
+    id: 'button',
+    name: 'Button',
+    icon: 'MousePointerClick',
+    type: 'element'
+  },
+  {
+    id: 'form',
+    name: 'Form',
+    icon: 'FormInput',
+    type: 'element'
+  }
+];
+
+// Placeholder for website data
+const initialWebsiteData = {
+  name: 'My New Website',
+  sections: []
+};
+
+const MainFeature = () => {
+  const [activeTab, setActiveTab] = useState('editor'); // editor, preview, templates, settings
+  const [websiteData, setWebsiteData] = useState(initialWebsiteData);
+  const [selectedElement, setSelectedElement] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const editorRef = useRef(null);
+  const [colorScheme, setColorScheme] = useState('blue'); // blue, purple, green, orange
+
+  // Sample color schemes
+  const colorSchemes = {
+    blue: {
+      primary: '#3b82f6',
+      secondary: '#60a5fa',
+      accent: '#2563eb'
+    },
+    purple: {
+      primary: '#8b5cf6',
+      secondary: '#a78bfa',
+      accent: '#7c3aed'
+    },
+    green: {
+      primary: '#10b981',
+      secondary: '#34d399',
+      accent: '#059669'
+    },
+    orange: {
+      primary: '#f97316',
+      secondary: '#fb923c',
+      accent: '#ea580c'
+    }
+  };
+
+  // Handle dragging elements into the editor
+  const handleDragStart = (e, item) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify(item));
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const itemData = JSON.parse(e.dataTransfer.getData('text/plain'));
+    
+    // Add the dropped item to the website data
+    setWebsiteData(prevData => {
+      const newData = { 
+        ...prevData,
+        sections: [...prevData.sections, {
+          ...itemData,
+          id: `${itemData.id}-${Date.now()}`,
+          content: getDefaultContentForType(itemData.id)
+        }]
+      };
+      setHasChanges(true);
+      return newData;
+    });
+    
+    toast.success(`Added ${itemData.name} section to your website!`);
+  };
+
+  // Get default content based on element type
+  const getDefaultContentForType = (type) => {
+    switch(type) {
+      case 'header':
+        return { title: 'Welcome to My Website', subtitle: 'A great place to share your ideas' };
+      case 'about':
+        return { title: 'About Us', content: 'Write about your company or yourself here.' };
+      case 'services':
+        return { title: 'Our Services', items: [
+          { title: 'Service 1', description: 'Description for service 1' },
+          { title: 'Service 2', description: 'Description for service 2' },
+          { title: 'Service 3', description: 'Description for service 3' }
+        ]};
+      case 'contact':
+        return { title: 'Contact Us', email: 'contact@example.com', phone: '(123) 456-7890' };
+      case 'text':
+        return { content: 'Click to edit this text' };
+      case 'image':
+        return { src: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80', alt: 'Placeholder image' };
+      case 'button':
+        return { label: 'Click Me', url: '#' };
+      case 'form':
+        return { 
+          title: 'Contact Form',
+          fields: [
+            { type: 'text', label: 'Name', required: true },
+            { type: 'email', label: 'Email', required: true },
+            { type: 'textarea', label: 'Message', required: true }
+          ]
+        };
+      default:
+        return {};
+    }
+  };
+
+  // Handle selecting an element in the editor
+  const handleElementClick = (elementId) => {
+    setSelectedElement(elementId);
+  };
+
+  // Handle removing an element
+  const handleRemoveElement = (elementId) => {
+    setWebsiteData(prevData => ({
+      ...prevData,
+      sections: prevData.sections.filter(section => section.id !== elementId)
+    }));
+    setSelectedElement(null);
+    setHasChanges(true);
+    toast.info('Section removed from your website');
+  };
+
+  // Handle publishing the website
+  const handlePublish = () => {
+    toast.success('Website published successfully!');
+    setHasChanges(false);
+  };
+
+  // Handle saving the website
+  const handleSave = () => {
+    toast.success('Changes saved successfully!');
+    setHasChanges(false);
+  };
+
+  // Handle selecting a template
+  const handleSelectTemplate = (template) => {
+    setWebsiteData({
+      name: `My ${template.name} Website`,
+      sections: [
+        {
+          id: `header-${Date.now()}`,
+          name: 'Header',
+          icon: 'HeaderIcon',
+          type: 'structure',
+          content: { title: `My ${template.name} Website`, subtitle: 'Welcome to my website' }
+        },
+        {
+          id: `about-${Date.now()}`,
+          name: 'About',
+          icon: 'Info',
+          type: 'structure',
+          content: { title: 'About Us', content: 'Information about our business or service.' }
+        },
+        {
+          id: `services-${Date.now()}`,
+          name: 'Services',
+          icon: 'Briefcase',
+          type: 'structure',
+          content: { 
+            title: 'Our Services', 
+            items: [
+              { title: 'Service 1', description: 'Description for service 1' },
+              { title: 'Service 2', description: 'Description for service 2' },
+              { title: 'Service 3', description: 'Description for service 3' }
+            ]
+          }
+        },
+        {
+          id: `contact-${Date.now()}`,
+          name: 'Contact',
+          icon: 'Mail',
+          type: 'structure',
+          content: { title: 'Contact Us', email: 'contact@example.com', phone: '(123) 456-7890' }
+        }
+      ]
+    });
+    setActiveTab('editor');
+    toast.success(`${template.name} template applied!`);
+    setHasChanges(true);
+  };
+
+  // Apply color scheme to website
+  const handleApplyColorScheme = (scheme) => {
+    setColorScheme(scheme);
+    toast.success(`${scheme.charAt(0).toUpperCase() + scheme.slice(1)} color scheme applied!`);
+    setHasChanges(true);
+  };
+
+  // Render editor element
+  const renderEditorElement = (section) => {
+    const isSelected = selectedElement === section.id;
+    
+    const baseClasses = `editor-element relative mb-4 ${isSelected ? 'selected' : ''} 
+                       border-2 border-dashed ${isSelected ? 'border-solid border-primary' : 'border-surface-300 dark:border-surface-600'}
+                       rounded-lg transition-all duration-200`;
+    
+    return (
+      <div 
+        key={section.id} 
+        className={baseClasses}
+        onClick={() => handleElementClick(section.id)}
+      >
+        {/* Remove button (only visible when selected) */}
+        {isSelected && (
+          <button 
+            className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1 z-10"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveElement(section.id);
+            }}
+          >
+            <ApperIcon name="X" className="h-4 w-4" />
+          </button>
+        )}
+        
+        {/* Element content */}
+        <div className="p-4 bg-white dark:bg-surface-800 rounded-md">
+          <div className="flex items-center mb-2">
+            <ApperIcon name={section.icon} className="mr-2 h-5 w-5 text-primary" />
+            <h3 className="text-lg font-medium">{section.name}</h3>
+          </div>
+          
+          {section.id.startsWith('header') && (
+            <div className="py-8 text-center">
+              <h2 className="text-2xl font-bold mb-2">{section.content.title}</h2>
+              <p className="text-surface-600 dark:text-surface-400">{section.content.subtitle}</p>
+            </div>
+          )}
+          
+          {section.id.startsWith('about') && (
+            <div className="py-4">
+              <h3 className="text-xl font-bold mb-2">{section.content.title}</h3>
+              <p className="text-surface-600 dark:text-surface-400">{section.content.content}</p>
+            </div>
+          )}
+          
+          {section.id.startsWith('services') && (
+            <div className="py-4">
+              <h3 className="text-xl font-bold mb-4">{section.content.title}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {section.content.items.map((item, index) => (
+                  <div key={index} className="p-3 border border-surface-200 dark:border-surface-700 rounded-lg">
+                    <h4 className="font-bold mb-1">{item.title}</h4>
+                    <p className="text-sm text-surface-600 dark:text-surface-400">{item.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {section.id.startsWith('contact') && (
+            <div className="py-4">
+              <h3 className="text-xl font-bold mb-2">{section.content.title}</h3>
+              <p className="mb-1">
+                <span className="font-medium">Email:</span> {section.content.email}
+              </p>
+              <p>
+                <span className="font-medium">Phone:</span> {section.content.phone}
+              </p>
+            </div>
+          )}
+          
+          {section.id.startsWith('text') && (
+            <div className="py-2">
+              <p>{section.content.content}</p>
+            </div>
+          )}
+          
+          {section.id.startsWith('image') && (
+            <div className="py-2">
+              <img 
+                src={section.content.src} 
+                alt={section.content.alt} 
+                className="max-w-full h-auto rounded-lg"
+              />
+            </div>
+          )}
+          
+          {section.id.startsWith('button') && (
+            <div className="py-2">
+              <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                {section.content.label}
+              </button>
+            </div>
+          )}
+          
+          {section.id.startsWith('form') && (
+            <div className="py-2">
+              <h3 className="font-bold mb-2">{section.content.title}</h3>
+              <div className="space-y-3">
+                {section.content.fields.map((field, index) => (
+                  <div key={index} className="flex flex-col">
+                    <label className="mb-1 text-sm font-medium">
+                      {field.label}{field.required && <span className="text-red-500">*</span>}
+                    </label>
+                    {field.type === 'textarea' ? (
+                      <textarea className="input-field h-24" placeholder={`Enter ${field.label.toLowerCase()}`} />
+                    ) : (
+                      <input 
+                        type={field.type} 
+                        className="input-field" 
+                        placeholder={`Enter ${field.label.toLowerCase()}`}
+                      />
+                    )}
+                  </div>
+                ))}
+                <button className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+                  Submit
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="bg-surface-100 dark:bg-surface-800 rounded-2xl overflow-hidden shadow-soft dark:shadow-none border border-surface-200 dark:border-surface-700">
+      {/* Builder Header */}
+      <div className="bg-white dark:bg-surface-800 p-4 border-b border-surface-200 dark:border-surface-700 flex justify-between items-center">
+        <div>
+          <h2 className="text-xl font-bold">{websiteData.name}</h2>
+          <p className="text-sm text-surface-500 dark:text-surface-400">
+            {websiteData.sections.length} sections
+            {hasChanges && " • Unsaved changes"}
+          </p>
+        </div>
+        <div className="flex space-x-2">
+          <button 
+            onClick={handleSave}
+            disabled={!hasChanges}
+            className={`px-3 py-1.5 rounded-lg text-sm flex items-center space-x-1 ${
+              hasChanges 
+                ? 'bg-surface-200 dark:bg-surface-700 hover:bg-surface-300 dark:hover:bg-surface-600' 
+                : 'bg-surface-100 dark:bg-surface-800 text-surface-400 cursor-not-allowed'
+            }`}
+          >
+            <ApperIcon name="Save" className="h-4 w-4" />
+            <span>Save</span>
+          </button>
+          <button 
+            onClick={handlePublish}
+            className="px-3 py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm flex items-center space-x-1"
+          >
+            <ApperIcon name="Upload" className="h-4 w-4" />
+            <span>Publish</span>
+          </button>
+        </div>
+      </div>
+      
+      {/* Builder Tabs */}
+      <div className="bg-white dark:bg-surface-900 border-b border-surface-200 dark:border-surface-700">
+        <div className="flex">
+          {['editor', 'preview', 'templates', 'settings'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === tab 
+                  ? 'text-primary border-b-2 border-primary' 
+                  : 'text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-200'
+              }`}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+      
+      {/* Builder Content */}
+      <div className="flex h-[70vh] bg-surface-50 dark:bg-surface-900">
+        {/* Elements panel (visible only in editor mode) */}
+        {activeTab === 'editor' && (
+          <div className="w-64 border-r border-surface-200 dark:border-surface-700 bg-white dark:bg-surface-800 overflow-y-auto">
+            <div className="p-4">
+              <h3 className="font-medium text-sm uppercase tracking-wider text-surface-500 mb-3">Elements</h3>
+              <div className="space-y-1">
+                {WEBSITE_SECTIONS.map(item => (
+                  <div 
+                    key={item.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, item)}
+                    onDragEnd={handleDragEnd}
+                    className="flex items-center p-2 rounded-lg cursor-move hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
+                  >
+                    <ApperIcon name={item.icon} className="h-5 w-5 mr-2 text-surface-600 dark:text-surface-400" />
+                    <span className="text-sm">{item.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Templates panel */}
+        {activeTab === 'templates' && (
+          <div className="flex-1 p-6 overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">Choose a Template</h2>
+            <p className="text-surface-600 dark:text-surface-400 mb-6">
+              Select a template to get started quickly with a pre-designed website layout.
+            </p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {WEBSITE_TEMPLATES.map(template => (
+                <motion.div
+                  key={template.id}
+                  whileHover={{ y: -5 }}
+                  className="card overflow-hidden"
+                >
+                  <img 
+                    src={template.thumbnail} 
+                    alt={template.name} 
+                    className="w-full h-40 object-cover"
+                  />
+                  <div className="p-4">
+                    <h3 className="font-bold mb-1">{template.name}</h3>
+                    <p className="text-sm text-surface-600 dark:text-surface-400 mb-3">
+                      {template.description}
+                    </p>
+                    <button
+                      onClick={() => handleSelectTemplate(template)}
+                      className="w-full py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors text-sm"
+                    >
+                      Use Template
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Settings panel */}
+        {activeTab === 'settings' && (
+          <div className="flex-1 p-6 overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">Website Settings</h2>
+            
+            <div className="card p-4 mb-6">
+              <h3 className="font-bold mb-3">Basic Information</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Website Name</label>
+                  <input 
+                    type="text" 
+                    className="input-field"
+                    value={websiteData.name}
+                    onChange={(e) => {
+                      setWebsiteData({...websiteData, name: e.target.value});
+                      setHasChanges(true);
+                    }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Website Description</label>
+                  <textarea 
+                    className="input-field h-24"
+                    placeholder="Enter a short description of your website"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+            
+            <div className="card p-4 mb-6">
+              <h3 className="font-bold mb-3">Color Scheme</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {Object.keys(colorSchemes).map(scheme => (
+                  <button
+                    key={scheme}
+                    onClick={() => handleApplyColorScheme(scheme)}
+                    className={`p-2 rounded-lg border-2 transition-all ${
+                      colorScheme === scheme 
+                        ? 'border-primary' 
+                        : 'border-transparent hover:border-surface-300 dark:hover:border-surface-600'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center">
+                      <div className="flex space-x-1 mb-2">
+                        <div 
+                          className="w-6 h-6 rounded-full" 
+                          style={{ backgroundColor: colorSchemes[scheme].primary }}
+                        ></div>
+                        <div 
+                          className="w-6 h-6 rounded-full" 
+                          style={{ backgroundColor: colorSchemes[scheme].secondary }}
+                        ></div>
+                        <div 
+                          className="w-6 h-6 rounded-full" 
+                          style={{ backgroundColor: colorSchemes[scheme].accent }}
+                        ></div>
+                      </div>
+                      <span className="text-sm capitalize">{scheme}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="card p-4">
+              <h3 className="font-bold mb-3">Typography</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Heading Font</label>
+                  <select className="input-field">
+                    <option>Inter</option>
+                    <option>Roboto</option>
+                    <option>Open Sans</option>
+                    <option>Montserrat</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Body Font</label>
+                  <select className="input-field">
+                    <option>Inter</option>
+                    <option>Roboto</option>
+                    <option>Open Sans</option>
+                    <option>Montserrat</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Editor canvas */}
+        {activeTab === 'editor' && (
+          <div 
+            ref={editorRef}
+            className="flex-1 p-6 bg-surface-100 dark:bg-surface-900 overflow-y-auto"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            {websiteData.sections.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-surface-300 dark:border-surface-600 rounded-lg">
+                <ApperIcon name="LayoutTemplate" className="h-12 w-12 text-surface-400 mb-4" />
+                <h3 className="text-lg font-medium mb-2">Your canvas is empty</h3>
+                <p className="text-surface-600 dark:text-surface-400 mb-4 max-w-md">
+                  Drag and drop elements from the left panel to start building your website, or choose a template to get started quickly.
+                </p>
+                <button
+                  onClick={() => setActiveTab('templates')}
+                  className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg transition-colors"
+                >
+                  Choose a Template
+                </button>
+              </div>
+            ) : (
+              <div className="max-w-4xl mx-auto bg-white dark:bg-surface-800 rounded-lg shadow-sm overflow-hidden">
+                {websiteData.sections.map(renderEditorElement)}
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Preview mode */}
+        {activeTab === 'preview' && (
+          <div className="flex-1 p-6 bg-surface-100 dark:bg-surface-900 overflow-y-auto">
+            <div className="bg-white dark:bg-surface-800 max-w-4xl mx-auto rounded-lg shadow-sm overflow-hidden">
+              {websiteData.sections.length === 0 ? (
+                <div className="p-8 text-center">
+                  <h3 className="text-lg font-medium mb-2">No content to preview</h3>
+                  <p className="text-surface-600 dark:text-surface-400">
+                    Add some elements to your website first.
+                  </p>
+                </div>
+              ) : (
+                websiteData.sections.map(section => {
+                  return (
+                    <div key={section.id} className="preview-section p-4">
+                      {section.id.startsWith('header') && (
+                        <div className="py-12 text-center" style={{backgroundColor: colorSchemes[colorScheme].primary, color: 'white'}}>
+                          <h1 className="text-3xl md:text-4xl font-bold mb-4">{section.content.title}</h1>
+                          <p className="text-lg opacity-90">{section.content.subtitle}</p>
+                        </div>
+                      )}
+                      
+                      {section.id.startsWith('about') && (
+                        <div className="py-12 px-4">
+                          <div className="max-w-3xl mx-auto">
+                            <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center" style={{color: colorSchemes[colorScheme].primary}}>
+                              {section.content.title}
+                            </h2>
+                            <p className="text-lg text-surface-700 dark:text-surface-300 leading-relaxed">
+                              {section.content.content}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {section.id.startsWith('services') && (
+                        <div className="py-12 px-4 bg-surface-50 dark:bg-surface-900">
+                          <div className="max-w-5xl mx-auto">
+                            <h2 className="text-2xl md:text-3xl font-bold mb-10 text-center" style={{color: colorSchemes[colorScheme].primary}}>
+                              {section.content.title}
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                              {section.content.items.map((item, index) => (
+                                <div key={index} className="bg-white dark:bg-surface-800 p-6 rounded-xl shadow-sm border border-surface-200 dark:border-surface-700">
+                                  <h3 className="text-xl font-bold mb-3" style={{color: colorSchemes[colorScheme].accent}}>
+                                    {item.title}
+                                  </h3>
+                                  <p className="text-surface-600 dark:text-surface-400">
+                                    {item.description}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {section.id.startsWith('contact') && (
+                        <div className="py-12 px-4">
+                          <div className="max-w-3xl mx-auto">
+                            <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center" style={{color: colorSchemes[colorScheme].primary}}>
+                              {section.content.title}
+                            </h2>
+                            <div className="flex flex-col md:flex-row justify-around items-center gap-8">
+                              <div className="text-center">
+                                <div 
+                                  className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4" 
+                                  style={{backgroundColor: colorSchemes[colorScheme].secondary}}
+                                >
+                                  <ApperIcon name="Mail" className="h-8 w-8 text-white" />
+                                </div>
+                                <h3 className="font-bold mb-2">Email</h3>
+                                <p className="text-surface-600 dark:text-surface-400">{section.content.email}</p>
+                              </div>
+                              <div className="text-center">
+                                <div 
+                                  className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4" 
+                                  style={{backgroundColor: colorSchemes[colorScheme].secondary}}
+                                >
+                                  <ApperIcon name="Phone" className="h-8 w-8 text-white" />
+                                </div>
+                                <h3 className="font-bold mb-2">Phone</h3>
+                                <p className="text-surface-600 dark:text-surface-400">{section.content.phone}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {section.id.startsWith('text') && (
+                        <div className="py-4 px-4">
+                          <div className="max-w-3xl mx-auto">
+                            <p className="text-surface-800 dark:text-surface-200 leading-relaxed">
+                              {section.content.content}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {section.id.startsWith('image') && (
+                        <div className="py-4 px-4">
+                          <div className="max-w-3xl mx-auto">
+                            <img 
+                              src={section.content.src} 
+                              alt={section.content.alt} 
+                              className="max-w-full h-auto rounded-lg mx-auto"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      
+                      {section.id.startsWith('button') && (
+                        <div className="py-8 px-4 text-center">
+                          <button 
+                            className="px-6 py-3 rounded-lg text-white font-medium"
+                            style={{backgroundColor: colorSchemes[colorScheme].primary}}
+                          >
+                            {section.content.label}
+                          </button>
+                        </div>
+                      )}
+                      
+                      {section.id.startsWith('form') && (
+                        <div className="py-12 px-4 bg-surface-50 dark:bg-surface-900">
+                          <div className="max-w-2xl mx-auto bg-white dark:bg-surface-800 p-8 rounded-xl shadow-sm border border-surface-200 dark:border-surface-700">
+                            <h3 className="text-xl font-bold mb-6 text-center" style={{color: colorSchemes[colorScheme].primary}}>
+                              {section.content.title}
+                            </h3>
+                            <div className="space-y-4">
+                              {section.content.fields.map((field, index) => (
+                                <div key={index} className="flex flex-col">
+                                  <label className="mb-1 font-medium">
+                                    {field.label}{field.required && <span className="text-red-500">*</span>}
+                                  </label>
+                                  {field.type === 'textarea' ? (
+                                    <textarea className="input-field h-32" placeholder={`Enter ${field.label.toLowerCase()}`} />
+                                  ) : (
+                                    <input 
+                                      type={field.type} 
+                                      className="input-field" 
+                                      placeholder={`Enter ${field.label.toLowerCase()}`}
+                                    />
+                                  )}
+                                </div>
+                              ))}
+                              <button 
+                                className="w-full py-3 text-white font-medium rounded-lg mt-4"
+                                style={{backgroundColor: colorSchemes[colorScheme].primary}}
+                              >
+                                Submit
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MainFeature;
