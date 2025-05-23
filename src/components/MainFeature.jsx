@@ -96,6 +96,7 @@ const MainFeature = () => {
   const [selectedElement, setSelectedElement] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const editorRef = useRef(null);
   const [colorScheme, setColorScheme] = useState('blue'); // blue, purple, green, orange
 
@@ -248,9 +249,46 @@ const MainFeature = () => {
   };
 
   // Handle publishing the website
-  const handlePublish = () => {
-    toast.success('Website published successfully!');
-    setHasChanges(false);
+  const handlePublish = async () => {
+    if (isPublishing) return;
+    
+    // Validate website has content
+    if (websiteData.sections.length === 0) {
+      toast.error('Cannot publish an empty website. Please add some content first.');
+      return;
+    }
+    
+    // Validate website has a name
+    if (!websiteData.name || websiteData.name.trim() === '') {
+      toast.error('Please provide a name for your website before publishing.');
+      return;
+    }
+    
+    setIsPublishing(true);
+    toast.info('Publishing your website...');
+    
+    try {
+      // Simulate publishing process with API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Simulate random publishing success/failure (90% success rate)
+      if (Math.random() > 0.1) {
+        // Generate a random subdomain for the published site
+        const subdomain = websiteData.name.toLowerCase().replace(/[^a-z0-9]/g, '') + '-' + Math.random().toString(36).substr(2, 4);
+        const publishedUrl = `https://${subdomain}.canvassite.com`;
+        
+        toast.success(`Website published successfully! Visit: ${publishedUrl}`, {
+          autoClose: 5000
+        });
+        setHasChanges(false);
+      } else {
+        throw new Error('Publishing service temporarily unavailable');
+      }
+    } catch (error) {
+      toast.error(`Publishing failed: ${error.message}. Please try again.`);
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   // Handle saving the website
@@ -488,10 +526,13 @@ const MainFeature = () => {
           </button>
           <button 
             onClick={handlePublish}
-            className="px-3 py-1.5 bg-primary hover:bg-primary-dark text-white rounded-lg text-sm flex items-center space-x-1"
+            disabled={isPublishing}
+            className={`px-3 py-1.5 rounded-lg text-sm flex items-center space-x-1 ${
+              isPublishing ? 'bg-surface-400 cursor-not-allowed' : 'bg-primary hover:bg-primary-dark'
+            } text-white`}
           >
-            <ApperIcon name="Upload" className="h-4 w-4" />
-            <span>Publish</span>
+            <ApperIcon name={isPublishing ? "Loader2" : "Upload"} className={`h-4 w-4 ${isPublishing ? 'animate-spin' : ''}`} />
+            <span>{isPublishing ? 'Publishing...' : 'Publish'}</span>
           </button>
         </div>
       </div>
@@ -527,9 +568,12 @@ const MainFeature = () => {
                   <div 
                     key={item.id}
                     draggable
+                    data-element-type={item.type}
                     onDragStart={(e) => handleDragStart(e, item)}
                     onDragEnd={handleDragEnd}
-                    className="flex items-center p-2 rounded-lg cursor-move hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
+                    className={`flex items-center p-2 rounded-lg cursor-move transition-all duration-200 ${
+                      isDragging ? 'opacity-50 scale-95' : 'hover:bg-surface-100 dark:hover:bg-surface-700 hover:shadow-sm'
+                    }`}
                   >
                     <ApperIcon name={item.icon} className="h-5 w-5 mr-2 text-surface-600 dark:text-surface-400" />
                     <span className="text-sm">{item.name}</span>
@@ -684,7 +728,9 @@ const MainFeature = () => {
         {activeTab === 'editor' && (
           <div 
             ref={editorRef}
-            className="flex-1 p-6 bg-surface-100 dark:bg-surface-900 overflow-y-auto"
+            className={`flex-1 p-6 bg-surface-100 dark:bg-surface-900 overflow-y-auto transition-all duration-200 ${
+              isDragging ? 'bg-primary/5 border-2 border-dashed border-primary/30' : ''
+            }`}
             onDragOver={handleDragOver}
             onDrop={handleDrop}
           >
