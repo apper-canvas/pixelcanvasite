@@ -160,16 +160,6 @@ const MainFeature = () => {
 
   // Get default content based on element type
   const getDefaultContentForType = (type) => {
-    // If this is an image element and we're dragging from media library
-    if (type === 'image' && itemData && itemData.fromMediaLibrary) {
-      return { 
-        src: itemData.url, 
-        alt: itemData.name || 'Media library image',
-        fromMediaLibrary: true,
-        mediaId: itemData.id
-      };
-    }
-    
     // Handle regular element types
     switch(type) {
       case 'header':
@@ -580,7 +570,7 @@ const MainFeature = () => {
                     src={template.thumbnail} 
                     alt={template.name} 
                     className="w-full h-40 object-cover"
-              />
+                  />
                   <div className="p-4">
                     <h3 className="font-bold mb-1">{template.name}</h3>
                     <p className="text-sm text-surface-600 dark:text-surface-400 mb-3">
