@@ -206,13 +206,18 @@ const Home = () => {
       {activeProject && (
         <div>
           <div className="mb-4">
+            <div className="bg-white dark:bg-surface-800 rounded-lg p-3 shadow-sm border border-surface-200 dark:border-surface-700 inline-block">
             <button
               onClick={handleBackToDashboard}
-              className="px-3 py-1.5 flex items-center text-sm font-medium text-surface-600 dark:text-surface-400 hover:text-surface-900 dark:hover:text-surface-200 transition-colors"
+              className="px-4 py-2 flex items-center text-sm font-medium text-surface-700 dark:text-surface-300 hover:text-primary hover:bg-surface-50 dark:hover:bg-surface-700 transition-all duration-200 rounded-md"
             >
               <ApperIcon name="ArrowLeft" className="h-4 w-4 mr-1.5" />
               Back to Dashboard
             </button>
+            </div>
+            <p className="text-xs text-surface-500 dark:text-surface-400 mt-2 ml-1">
+              Return to your website dashboard and projects
+            </p>
           </div>
           
           <MainFeature />

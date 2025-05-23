@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ApperIcon from './components/ApperIcon';
@@ -8,6 +8,8 @@ import NotFound from './pages/NotFound';
 import MediaLibrary from './components/MediaLibrary/MediaLibraryComponent';
 
 function App() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return true;
@@ -39,6 +41,15 @@ function App() {
           </div>
           
           <div className="flex items-center space-x-4">
+            {location.pathname === '/media-library' && (
+              <button 
+                onClick={() => navigate('/')}
+                className="p-2 rounded-full hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors flex items-center space-x-1"
+                aria-label="Back to Dashboard"
+              >
+                <ApperIcon name="ArrowLeft" className="h-5 w-5" />
+              </button>
+            )}
             <button 
               onClick={() => window.location.href = '/media-library'}
               className="p-2 rounded-full hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
